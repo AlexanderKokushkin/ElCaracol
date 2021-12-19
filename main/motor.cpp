@@ -14,7 +14,7 @@ SomeMotor::SomeMotor(gpio_num_t dirPin_, gpio_num_t pullPin_){
     gpio_config(&tmp_io_conf);
 }
 
-/*
+
 
 void SomeMotor::blockingRotate(uint32_t value,direction_t dir_){ 
  // todo : BoilerPlate	
@@ -24,9 +24,9 @@ void SomeMotor::blockingRotate(uint32_t value,direction_t dir_){
  stepsPending = value;
  
  acceleration = accelerationThreshold;
- accelTimestamp = micros()+accelIntervalMKS;
+ accelTimestamp = esp_timer_get_time()+accelIntervalMKS;
  accelIntervalMKS = DFLTaccelIntervalMKS;
- pollTimestamp = micros() + pollIntervalMKS + POLL_INTERVAL_MIN*acceleration;
+ pollTimestamp = esp_timer_get_time() + pollIntervalMKS + POLL_INTERVAL_MIN*acceleration;
  deceleration = 0;
   
  while(stepsPending){
@@ -34,6 +34,7 @@ void SomeMotor::blockingRotate(uint32_t value,direction_t dir_){
  }
 }
 
+/*
 void SomeMotor::rotateCW(){
  if ((stepsPending)and(direction!=direction_t::CW)){
   smoothStop(); 
@@ -44,10 +45,10 @@ void SomeMotor::rotateCW(){
  stepsPending = multiplier->value(); 
  
  acceleration = accelerationThreshold;
- accelTimestamp = micros()+accelIntervalMKS;
+ accelTimestamp = esp_timer_get_time()+accelIntervalMKS;
  accelIntervalMKS = DFLTaccelIntervalMKS;
- pollTimestamp = micros() + pollIntervalMKS + POLL_INTERVAL_MIN*acceleration;
- //pollTimestamp = micros()+pollIntervalMKS; // i.e. immediately
+ pollTimestamp = esp_timer_get_time() + pollIntervalMKS + POLL_INTERVAL_MIN*acceleration;
+ //pollTimestamp = esp_timer_get_time()+pollIntervalMKS; // i.e. immediately
  deceleration = 0;
 }
 
@@ -61,19 +62,20 @@ void SomeMotor::rotateCCW(){
  stepsPending = multiplier->value();
 
  acceleration = accelerationThreshold;
- accelTimestamp = micros()+accelIntervalMKS;
+ accelTimestamp = esp_timer_get_time()+accelIntervalMKS;
  accelIntervalMKS = DFLTaccelIntervalMKS;
- pollTimestamp = micros() + pollIntervalMKS + POLL_INTERVAL_MIN*acceleration;
- //pollTimestamp = micros()+pollIntervalMKS; // i.e. immediately
+ pollTimestamp = esp_timer_get_time() + pollIntervalMKS + POLL_INTERVAL_MIN*acceleration;
+ //pollTimestamp = esp_timer_get_time()+pollIntervalMKS; // i.e. immediately
  deceleration = 0;
 }
+*/
 
  void SomeMotor::poll(){
 
  if (!stepsPending){ return; }
 	 
- if( micros() - accelTimestamp > accelIntervalMKS){
-	 accelTimestamp = micros();
+ if( esp_timer_get_time() - accelTimestamp > accelIntervalMKS){
+	 accelTimestamp = esp_timer_get_time();
 	 if(acceleration){
 		 acceleration--;
 	     accelIntervalMKS += 5; // debug??
@@ -83,31 +85,35 @@ void SomeMotor::rotateCCW(){
  }  	
  
  
- if ( micros() - pollTimestamp < pollIntervalMKS + 
+ if ( esp_timer_get_time() - pollTimestamp < pollIntervalMKS + 
                                  POLL_INTERVAL_MIN*acceleration+
 			                     POLL_INTERVAL_MIN*deceleration ) { return;}
 
  //if ((stepsPending%10==0)and(acceleration)){ acceleration--;}
  //if ((stepsPending%(ACCELERATION-acceleration)==0)and(acceleration)){ acceleration--;}
 
- pollTimestamp = micros();
+ pollTimestamp = esp_timer_get_time();
  switch (phase){
 	   case phase_t::dir:
 	   {
 		if(direction==direction_t::CCW){ // kludge
-		 *dirPinPort &=	~dirPinMask; // clear bit
+		 //*dirPinPort &=	~dirPinMask; // clear bit
+		 gpio_set_level(dir,0);
 		}else{
-		 *dirPinPort |= dirPinMask; // set bit
+		 //*dirPinPort |= dirPinMask; // set bit
+		 gpio_set_level(dir,1);
 		}
 	    phase = phase_t::pullHigh;
 		}
 	   break;
 	   case phase_t::pullHigh:
-		*pullPinPort |= pullPinMask; // set bit
+		//*pullPinPort |= pullPinMask; // set bit
+		gpio_set_level(pull,1);
 	    phase = phase_t::pullLow;
 	   break;
 	   case phase_t::pullLow:
-		*pullPinPort &= ~pullPinMask; // clear bit
+		//*pullPinPort &= ~pullPinMask; // clear bit
+		gpio_set_level(pull,0);
 	    phase = phase_t::pullHigh;
 	    stepsPending--;
 		if (direction==direction_t::CW){
@@ -118,7 +124,6 @@ void SomeMotor::rotateCCW(){
 	   break;	   
  }
 }
-*/
 
 void SomeMotor::setPollIntervalMKS(uint32_t value){
 	if (value > POLL_INTERVAL_MAX){return;}

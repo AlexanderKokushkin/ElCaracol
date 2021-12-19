@@ -17,8 +17,8 @@ class Robot{
 
   // temporary, for tests
   inline static direction_t testDirection = direction_t::CW;
-  inline static uint16_t testLength = 500;
-  inline static uint16_t testMulti = 1;
+  inline static uint16_t testLength = 10000;
+  inline static uint16_t testMulti = 10;
   inline static uint8_t testRepeat = 1; 
 };
 

@@ -18,7 +18,7 @@ void MainScreen::update_display(){
  static const char s2[] = "Multi=%04d"; 
  static const char s3[] = "Repeat   %03d";
  static const char s4[] = ">>   Run  <<";
- static const char s5[] = "Depth   %04d";
+ static const char s5[] = ">> Run x5 <<";;
  static const char s6[] = "Repeat   %03d";
  static const char s7[] = ">>   Run  <<";
  static const char s8[] = "ReverseLeftC"; // remove ?
@@ -141,7 +141,16 @@ void MainScreen::process_input(knob_t knob){
  		switch (highlitedItem){
 		case 0: // direction
 		 Robot::testDirection = (Robot::testDirection==direction_t::CW)?direction_t::CCW:direction_t::CW;
+		break;		
+		case 4:
+		 runPrototype();
+		 Lcd::clear();
 		break;
+		case 5:
+		 runPrototypeX5();
+		 Lcd::clear(); 
+		break;
+
 		default:break; 
 	   }
 	break;
@@ -153,3 +162,51 @@ void MainScreen::process_input(knob_t knob){
 
 }
 
+void MainScreen::runPrototype(){
+
+  for(uint8_t i=0;i<Robot::testRepeat;i++){
+   Lcd::init(); // just in case	
+   Lcd::clear();
+ 
+   Lcd::stretchedString(0,0,"*Runing*");
+   sprintf(Lcd::lazy,"L:%06u", Robot::testLength );
+   Lcd::stretchedString(0,4, Lcd::lazy);
+
+   sprintf(Lcd::lazy,"R:%02uof%02u", Robot::testRepeat-i,Robot::testRepeat  );
+   Lcd::stretchedString(0,6, Lcd::lazy);     
+  
+   axisXMotor.blockingRotate( Robot::testLength, Robot::testDirection );
+  }
+  
+  Lcd::clear();
+  Lcd::string("Done.");
+  vTaskDelay(pdMS_TO_TICKS(2000));
+
+}
+
+void MainScreen::runPrototypeX5(){
+
+   for(uint8_t i=0;i<Robot::testRepeat;i++){
+     Lcd::init(); // just in case	
+     Lcd::clear();
+ 
+     Lcd::stretchedString(0,0,"Run Forward");
+     sprintf(Lcd::lazy,"L:%06u", Robot::testLength );
+     Lcd::stretchedString(0,4, Lcd::lazy);
+
+     sprintf(Lcd::lazy,"R:%02uof%02u", Robot::testRepeat-i,Robot::testRepeat  );
+     Lcd::stretchedString(0,6, Lcd::lazy);     
+  
+     axisXMotor.blockingRotate( Robot::testLength, direction_t::CW );
+     vTaskDelay(pdMS_TO_TICKS(1000));
+   }
+
+   Lcd::init(); // just in case	
+   Lcd::clear();
+   Lcd::stretchedString(0,0,"Run Backward");
+   axisXMotor.blockingRotate( Robot::testLength * 5, direction_t::CCW );
+ 
+   Lcd::clear();
+   Lcd::string("Done.");
+   vTaskDelay(pdMS_TO_TICKS(2000));
+}

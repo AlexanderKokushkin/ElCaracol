@@ -32,6 +32,8 @@
    void process_input(knob_t knob) override;
    MainScreen();
    ~MainScreen(){};
+   void runPrototype();
+   void runPrototypeX5();
  };
  /*
  class SetupMenu : public State {

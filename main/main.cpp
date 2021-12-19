@@ -9,6 +9,7 @@
 #include <tiny_encoder.h>
 #include "statemachine.h"
 #include "single_encoder.h"
+#include "motor.h"
 
 using std::cout;
 uint32_t currentMills = 0;
@@ -17,7 +18,8 @@ static void superLoop(void* v){
     for(;;){
         //vTaskDelay(2 / portTICK_RATE_MS);
         encoder.poll();
-        Device::poll(); 
+        Device::poll();
+        axisXMotor.poll(); 
     }
     vTaskDelete(NULL);
 }
@@ -61,32 +63,7 @@ extern "C" void app_main(){
     }
     */
 
-
    xTaskCreatePinnedToCore(superLoop, "superLoop", 2048, nullptr, tskIDLE_PRIORITY, nullptr, tskNO_AFFINITY);
-   while(1){ 
-       vTaskDelay(pdMS_TO_TICKS(1000)); 
-
-       
-        //uint32_t tmp = millis() - currentMills;  
-        //cout << " tmp = "<< (unsigned long)tmp << " xXx \n"; 
-        //currentMills = millis(); 
-
-   }
-
-   while(1){
-        for (uint8_t y=0;y<Lcd::txtHeigth;++y){ 
-            for (uint8_t x=0;x<Lcd::txtWidth;++x){
-                Lcd::gotoXY(x*6,y);
-                Lcd::string("D");
-         }
-        }
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        Lcd::sixBigDigits(123456);
-        vTaskDelay(pdMS_TO_TICKS(1500));
-        Lcd::clear();
-        vTaskDelay(pdMS_TO_TICKS(1000));
-   }
-
-
+   //while(1){ vTaskDelay(pdMS_TO_TICKS(1000));  }
 }
 
