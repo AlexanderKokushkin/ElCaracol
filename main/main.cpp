@@ -28,8 +28,8 @@ extern "C" void app_main(){
    
   Lcd::init();
   Lcd::clear();
-  Lcd::string("ElCaracol v0.0");
-  vTaskDelay(pdMS_TO_TICKS(2000));
+  Lcd::string("ElCaracol v0.01y");
+  vTaskDelay(pdMS_TO_TICKS(3000));
   Device::init();
 
 
